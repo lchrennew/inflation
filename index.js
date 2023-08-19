@@ -1,33 +1,25 @@
+import zlib from "zlib";
 
-var zlib = require('zlib')
+export default (stream, options) => {
+    if (!stream) {
+        throw new TypeError('argument stream is required')
+    }
 
-module.exports = inflate
+    const defaultOptions = {
+        supportedEncodings: [ 'gzip', 'deflate', 'gzip, deflate' ],
+        identityEncodings: [ 'identity' ],
+    }
+    options = { ...defaultOptions, ...options }
 
-function inflate(stream, options) {
-  if (!stream) {
-    throw new TypeError('argument stream is required')
-  }
 
-  options = options || {}
+    const encoding = stream.headers?.['content-encoding'] || 'identity';
 
-  var encoding = options.encoding
-    || (stream.headers && stream.headers['content-encoding'])
-    || 'identity'
+    if (options.identityEncodings.includes(encoding)) return stream
+    if (!options.supportedEncodings.includes(encoding)) {
+        const error = new Error(`Unsupported Content-Encoding: ${ encoding }`)
+        error.status = 415
+        throw error
+    }
+    return stream.pipe(zlib.createUnzip(options.unzip))
+};
 
-  switch (encoding) {
-  case 'gzip':
-  case 'deflate':
-    break
-  case 'identity':
-    return stream
-  default:
-    var err = new Error('Unsupported Content-Encoding: ' + encoding)
-    err.status = 415
-    throw err
-  }
-
-  // no not pass-through encoding
-  delete options.encoding
-
-  return stream.pipe(zlib.Unzip(options))
-}
