@@ -1,11 +1,12 @@
 {
   "name": "es-inflation",
   "description": "Easily unzip an HTTP stream",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "author": "Chun Li",
   "license": "MIT",
   "repository": "lchrennew/inflation",
   "type": "module",
+  "main": "index.js",
   "keywords": [
     "decompress",
     "unzip",
